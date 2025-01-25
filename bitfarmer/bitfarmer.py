@@ -16,21 +16,12 @@ import bitfarmer.ntp as ntp
 from bitfarmer.elphapex import ElphapexDG1
 from bitfarmer.volcminer import VolcminerD1
 
-# TODO:
-#  + edit config GUIDED
-#  + volcminer -> fans not full when stopped
-#  + colors -> file
-#  + fault tolerant - error handling
-#  + encrypt config - at end
-#  + pool api - at end
-#  + make package
-
 
 WAIT_TIME = 60
 BANNER = """   ___  _ __  ____
   / _ )(_) /_/ __/__ _______ _  ___ ____
- / _  / / __/ _// _ `/ __/  ' \/ -_) __/
-/____/_/\__/_/  \_,_/_/ /_/_/_/\__/_/
+ / _  / / __/ _// _ `/ __/  ' \\/ -_) __/
+/____/_/\\__/_/  \\_,_/_/ /_/_/_/\\__/_/
 """
 ACTIONS = [
     {"key": "a", "expl": "add miner"},
