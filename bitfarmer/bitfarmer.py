@@ -61,7 +61,7 @@ def perform_action(action: str, conf: dict) -> dict:
             conf = config.add_miner(conf)
             conf = config.reload_config(conf)
         case "e":
-            conf = config.manually_edit_conf(conf)
+            conf = config.edit_conf(conf)
         case "s":
             _ = stop_miners(conf, False, all_miners=True)
         case "r":

@@ -80,6 +80,43 @@ def init_config() -> dict:
     return conf
 
 
+def edit_conf(conf: dict) -> dict:
+    """Edit configuration manually or guided"""
+    how_edit = select("Edit config manually or guided: ", ["guided", "manual"], "?")
+    if how_edit == "manual":
+        return manually_edit_conf(conf)
+    avail_params = [
+        "time of day",
+        "view",
+        "ntp servers",
+        "available pools",
+        "add miner",
+        "delete miners",
+        "editor",
+        "DONE",
+    ]
+    while True:
+        edit_param = select("Select parameter to edit: ", avail_params, "?")
+        match edit_param:
+            case "time of day":
+                conf = setup_time_of_day(conf)
+            case "view":
+                conf = choose_view(conf)
+            case "ntp servers":
+                conf = set_ntp(conf)
+            case "available pools":
+                conf = add_pool(conf)
+            case "add miner":
+                conf = add_miner(conf)
+            case "delete miners":
+                conf = delete_miners(conf)
+            case "editor":
+                conf = select_editor(conf)
+            case _:
+                break
+    return reload_config(conf)
+
+
 def manually_edit_conf(conf: dict) -> dict:
     """Open conf file in selected editor"""
     subprocess.run([conf["editor"], f"{CONF_DIR}{CONF_FILE}"])
@@ -128,6 +165,8 @@ def setup_time_of_day(conf: dict) -> dict:
         "",
     )
     tod_hours = [int(h[:-2]) for h in tod_hours]
+    if tod_exceptions:
+        print(f"{Fore.MAGENTA}Exceptions: {tod_exceptions}{Fore.RESET}")
     while True:
         add_exception = confirm("\nAdd schedule exceptions?")
         if not add_exception:
@@ -251,6 +290,23 @@ def add_pool(conf: dict) -> dict:
     return conf
 
 
+def delete_miners(conf: dict) -> dict:
+    """Delete miners from config"""
+    if "miners" not in conf.keys():
+        print("No miners to delete")
+        return conf
+    current_ips = [conf["miners"][i]["ip"] for i in range(len(conf["miners"]))]
+    del_ips = checkbox("Choose miners to delete: ", current_ips, "󰗨")
+    print(f"{Fore.RED}Delete miners: {del_ips}{Fore.RESET}")
+    if confirm("Are you sure you want to delete these miners?"):
+        miners = []
+        for miner in conf["miners"]:
+            if miner["ip"] not in del_ips:
+                miners.append(miner)
+        conf["miners"] = miners
+    return conf
+
+
 def validate_date(s: str) -> bool:
     """simple empty validation"""
     if not s:
@@ -286,7 +342,11 @@ def text(prompt: str, mark: str, validation=default_validate) -> str:
 def checkbox(prompt: str, options: list, mark: str, validation=default_validate) -> str:
     """Text input"""
     answer = quest.checkbox(
-        prompt, options, qmark=mark, instruction="", validate=validation
+        prompt,
+        options,
+        qmark=mark,
+        instruction="(Spacebar to select/deselect)",
+        validate=validation,
     ).ask()
     if answer is None:
         raise KeyboardInterrupt

@@ -1,7 +1,6 @@
 <div align="center">
   <h1> bitfarmer </h1>
   <h2> ASIC Manager </h2>
-  <h3> Stay humble and stack sats </h3>
 </div>
 
 ## Features
@@ -20,8 +19,8 @@
  - Volcminer D1
  - Volcminer D1 Lite
 
-## TODO
- - [ ] Guided configuration edit
+## TODO :construction_worker_man:
+ - [X] Guided edit of configuration
  - [ ] Volcminer
    - [ ] Cap fan speed when stopped mining
  - [ ] Manual mode:
@@ -31,6 +30,9 @@
    - [ ] API key in configuration file
  - [ ] Improve error handling
  - [ ] Improve README
+   - [ ] Installation
+   - [ ] Configuration explanation
+   - [ ] Demo
 
 
 ## Installation
