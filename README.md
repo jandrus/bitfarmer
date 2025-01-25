@@ -1,10 +1,9 @@
 <div align="center">
-  <h1> bitfarmer </h1>
-  <h2> ASIC Manager </h2>
+  <h1>bitfarmer :man_farmer:</h1>
+  <h2>CLI ASIC Manager</h2>
 </div>
 
-## Features
-
+## Features :sparkles:
  - Terminal based
  - Time of Day ASIC management
  - Manual ASIC management
@@ -12,7 +11,6 @@
  - Status Logging and Printout
  
 ## Supported Miners :robot:
-
  - Elphapex DG1
  - Elphapex DG1+
  - Elphapex DG Home
@@ -28,11 +26,13 @@
    - [ ] Stop subset of machines
  - [ ] Integrate pool stats
    - [ ] API key in configuration file
- - [ ] Improve error handling
+ - [ ] Ping test when adding miners (ip)
+ - [X] Improve error handling (could still be better)
  - [ ] Improve README
    - [ ] Installation
    - [ ] Configuration explanation
    - [ ] Demo
+ - [ ] Move colors to file
 
 
 ## Installation

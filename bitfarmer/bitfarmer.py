@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
+import json
 import os
 import select
 import sys
 import time
 from datetime import datetime
 
-from requests import exceptions
 from colorama import Fore
 from yaspin import yaspin
 
@@ -15,7 +15,6 @@ import bitfarmer.log as log
 import bitfarmer.ntp as ntp
 from bitfarmer.elphapex import ElphapexDG1
 from bitfarmer.volcminer import VolcminerD1
-
 
 WAIT_TIME = 60
 BANNER = """   ___  _ __  ____
@@ -96,7 +95,11 @@ def get_ts(conf: dict) -> int:
         return ntp.get_ts(conf["ntp"]["primary"])
     except:
         log.log_msg(f"NTP server {conf['ntp']['primary']} failed", "WARNING")
-    return ntp.get_ts(conf["ntp"]["secondary"])
+    try:
+        return ntp.get_ts(conf["ntp"]["secondary"])
+    except:
+        log.log_msg(f"NTP server {conf['ntp']['secondary']} failed", "WARNING")
+    return int(time.time())
 
 
 def is_tod_active(ts: int, conf: dict) -> bool:
@@ -105,7 +108,6 @@ def is_tod_active(ts: int, conf: dict) -> bool:
     hour = dt.hour
     weekday = dt.strftime("%A")
     date = dt.strftime("%m/%d/%Y")
-    # print(f"TIMESTAMP\n\tHOUR: {hour}, DAY: {weekday}, DATE: {date}")
     return (
         weekday in conf["tod_schedule"]["days"]
         and hour in conf["tod_schedule"]["hours"]
@@ -166,19 +168,27 @@ def start_miners(conf: dict, for_tod: bool, all_miners: bool = False) -> bool:
 def main():
     try:
         miners_have_been_stopped = False
-        clear_screen()
-        print(BANNER)
         conf = config.get_conf()
+        miners = get_miners(conf)
         while True:
             clear_screen()
             ts = get_ts(conf)
             print(Fore.GREEN + BANNER)
             print(time.ctime(ts) + Fore.RESET)
             if is_tod_active(ts, conf) and not miners_have_been_stopped:
-                miners_have_been_stopped = stop_miners(conf, True)
+                try:
+                    miners_have_been_stopped = stop_miners(conf, True)
+                except Exception as e:
+                    err_msg = f"Error stopping miners: {type(e).__name__} -> {str(e)}"
+                    log.log_msg(err_msg, "ERROR")
+                    print(Fore.RED + err_msg + Fore.RESET)
             if not is_tod_active(ts, conf) and miners_have_been_stopped:
-                miners_have_been_stopped = start_miners(conf, True)
-            miners = get_miners(conf)
+                try:
+                    miners_have_been_stopped = start_miners(conf, True)
+                except Exception as e:
+                    err_msg = f"Error starting miners: {type(e).__name__} -> {str(e)}"
+                    log.log_msg(err_msg, "ERROR")
+                    print(Fore.RED + err_msg + Fore.RESET)
             for miner in miners:
                 try:
                     stats = miner.get_miner_status()
@@ -188,21 +198,25 @@ def main():
                         stats.pprint()
                     log.log_stats(str(stats))
                 except Exception as e:
-                    print(f"Error for {miner.ip} -> {e}")
-                    log.log_msg(f"Error for {miner.ip} -> {e}", "ERROR")
+                    err_msg = f"Error gathering data for {miner.ip}: {type(e).__name__} -> {str(e)}"
+                    log.log_msg(err_msg, "ERROR")
+                    print(Fore.RED + err_msg + Fore.RESET)
             user_input = get_input("Action: ", WAIT_TIME)
             if user_input is not None:
                 conf = perform_action(user_input, conf)
-    except exceptions.Timeout as e:
-        msg = f"Timeout error: {str(e)}"
-        print(f"ERROR: {msg}")
-        log.log_msg(msg, "ERROR")
-    except Exception as e:
-        log.log_msg(f"Unknown error: {str(e)}", "CRITICAL")
+                miners = get_miners(conf)
+    except json.JSONDecodeError as e:
+        err_msg = f"Config error: {type(e).__name__} -> {str(e)}"
+        log.log_msg(err_msg, "CRITICAL")
+        print(Fore.RED + err_msg + Fore.RESET)
         sys.exit(1)
     except KeyboardInterrupt:
         log.log_msg("program exit by user", "INFO")
         print(f"{Fore.GREEN}Goodbye{Fore.RESET}")
+    except Exception as e:
+        log.log_msg(f"Unknown error: {type(e).__name__} -> {str(e)}", "CRITICAL")
+        print(f"{Fore.RED}CRITICAL error: {type(e).__name__} -> {str(e)}{Fore.RESET}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

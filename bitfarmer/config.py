@@ -7,7 +7,7 @@ from datetime import datetime
 
 import questionary as quest
 from colorama import Fore
-from platformdirs import user_data_dir, user_config_dir
+from platformdirs import user_config_dir, user_data_dir
 
 from bitfarmer.miner import MinerStatus
 
@@ -367,3 +367,11 @@ def password(prompt: str, validation=default_validate) -> str:
     if answer is None:
         raise KeyboardInterrupt
     return answer
+
+
+if __name__ == "__main__":
+    try:
+        conf = read_conf()
+        print(json.dumps(conf, indent=2))
+    except Exception as e:
+        print(f"{type(e).__name__} -> {str(e)}")

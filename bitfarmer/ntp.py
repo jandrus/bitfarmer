@@ -2,7 +2,6 @@
 
 import ntplib
 
-
 NTP_CLIENT = ntplib.NTPClient()
 
 
