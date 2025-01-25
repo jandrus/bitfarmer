@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "bitfarmer"
+version = "0.1.0"
+description = "ASIC manager"
+authors = ["jandrus <jandrus@citadel.edu>"]
+license = "GNU General Public License v3.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+requests = ">=2.23.0"
+colorama = ">=0.4.6"
+ntplib = ">=0.4.0"
+platformdirs = ">=4.3.6"
+yaspin = ">=3.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
