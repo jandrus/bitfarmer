@@ -3,16 +3,31 @@
 import os
 import time
 
+import bitfarmer.coloring as coloring
 import bitfarmer.config as config
 
 LOG_FILE = "bitfarmer.log"
 MINER_LOG = "minerstats.csv"
 
 
-def log_msg(msg: str, level: str):
+def log_msg(msg: str, level: str, quiet: bool = False):
     """log information and errors"""
     with open(f"{config.DATA_DIR}{LOG_FILE}", "a", encoding="ascii") as f:
         f.write(f"{time.ctime()} - {level} - {msg}\n")
+    if not quiet:
+        match level:
+            case "SUCCESS":
+                coloring.print_success(msg)
+            case "CRITICAL":
+                coloring.print_error(msg)
+            case "ERROR":
+                coloring.print_error(msg)
+            case "WARNING":
+                coloring.print_warn(msg)
+            case "INFO":
+                coloring.print_info(msg)
+            case _:
+                print(msg)
 
 
 def log_stats(msg: str):

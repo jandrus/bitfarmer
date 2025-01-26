@@ -33,7 +33,7 @@
    - [ ] Configuration explanation
    - [ ] Demo
  - [x] Move colors to file
- - [ ] Prints to logging
+ - [x] Prints to logging
 
 
 ## Installation

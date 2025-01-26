@@ -118,10 +118,8 @@ def stop_miners(conf: dict, for_tod: bool, all_miners: bool = False) -> bool:
     """stop miners"""
     miners = get_miners(conf)
     if for_tod:
-        coloring.print_warn("Stopping miners for time of day metering")
         log.log_msg("Stopping miners for time of day metering", "INFO")
     if all_miners:
-        coloring.print_warn("Stopping ALL miners")
         log.log_msg("Stopping ALL miners", "INFO")
     for miner in miners:
         if all_miners or miner.tod and for_tod:
@@ -146,10 +144,8 @@ def start_miners(conf: dict, for_tod: bool, all_miners: bool = False) -> bool:
     """start miners"""
     miners = get_miners(conf)
     if for_tod:
-        coloring.print_info("Starting miners for time of day metering")
         log.log_msg("Starting miners for time of day metering", "INFO")
     if all_miners:
-        coloring.print_info("Starting ALL miners")
         log.log_msg("Starting ALL miners", "INFO")
     for miner in miners:
         if all_miners or for_tod and miner.tod:
@@ -182,17 +178,19 @@ def main():
                 try:
                     miners_have_been_stopped = stop_miners(conf, True)
                 except Exception as e:
-                    err_msg = f"Error stopping miners: {type(e).__name__} -> {str(e)}"
-                    log.log_msg(err_msg, "ERROR")
-                    coloring.print_error(err_msg)
+                    log.log_msg(
+                        f"Error stopping miners: {type(e).__name__} -> {str(e)}",
+                        "ERROR",
+                    )
                     time.sleep(5)
             if not is_tod_active(ts, conf) and miners_have_been_stopped:
                 try:
                     miners_have_been_stopped = start_miners(conf, True)
                 except Exception as e:
-                    err_msg = f"Error starting miners: {type(e).__name__} -> {str(e)}"
-                    log.log_msg(err_msg, "ERROR")
-                    coloring.print_error(err_msg)
+                    log.log_msg(
+                        f"Error starting miners: {type(e).__name__} -> {str(e)}",
+                        "ERROR",
+                    )
                     time.sleep(5)
             for miner in miners:
                 try:
@@ -203,26 +201,23 @@ def main():
                         stats.pprint()
                     log.log_stats(str(stats))
                 except Exception as e:
-                    err_msg = f"Error gathering data for {miner.ip}: {type(e).__name__} -> {str(e)}"
-                    log.log_msg(err_msg, "ERROR")
-                    coloring.print_error(err_msg)
+                    log.log_msg(
+                        f"Error gathering data for {miner.ip}: {type(e).__name__} -> {str(e)}",
+                        "ERROR",
+                    )
                     time.sleep(5)
             user_input = get_input("Action: ", WAIT_TIME)
             if user_input is not None:
                 conf = perform_action(user_input, conf)
                 miners = get_miners(conf)
     except json.JSONDecodeError as e:
-        err_msg = f"Config error: {type(e).__name__} -> {str(e)}"
-        log.log_msg(err_msg, "CRITICAL")
-        coloring.print_error(err_msg)
+        log.log_msg(f"Config error: {type(e).__name__} -> {str(e)}", "CRITICAL")
         sys.exit(1)
     except KeyboardInterrupt:
-        log.log_msg("program exit by user", "INFO")
+        log.log_msg("program exit by user", "INFO", quiet=True)
         coloring.print_success("Goodbye")
     except Exception as e:
-        err_msg = f"Unknown error: {type(e).__name__} -> {str(e)}"
-        log.log_msg(err_msg, "CRITICAL")
-        coloring.print_error(err_msg)
+        log.log_msg(f"Unknown error: {type(e).__name__} -> {str(e)}", "CRITICAL")
         sys.exit(1)
 
 
