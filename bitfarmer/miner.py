@@ -118,7 +118,8 @@ class MinerStatus:
         current_hr = f"{self.hashrate_total_current / 1000:,.2f} GH/s"
         avg_hr = f"{self.hashrate_total_avg / 1000:,.2f} GH/s"
         fans_ok = (
-            coloring.success_color("") if self.fans_ok() else coloring.err_color("")
+            coloring.success_color(
+                "") if self.fans_ok() else coloring.err_color("")
         )
         pool_ok = (
             coloring.success_color("")

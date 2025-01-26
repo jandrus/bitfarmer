@@ -34,7 +34,7 @@
    - [ ] Demo
  - [x] Move colors to file
  - [x] Prints to logging
-   - [ ] Move detailed errors to log
+   - [x] Move detailed errors to log
  - [ ] Icons optional
 
 

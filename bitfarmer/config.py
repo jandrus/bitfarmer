@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import json
-import platform
 import os
+import platform
 import subprocess
 from datetime import datetime
 
@@ -100,7 +100,8 @@ def init_config() -> dict:
 
 def edit_conf(conf: dict) -> dict:
     """Edit configuration manually or guided"""
-    how_edit = select("Edit config manually or guided: ", ["guided", "manual"], "?")
+    how_edit = select("Edit config manually or guided: ",
+                      ["guided", "manual"], "?")
     if how_edit == "manual":
         return manually_edit_conf(conf)
     avail_params = [
@@ -229,7 +230,8 @@ def add_miner(conf: dict) -> dict:
     tod_input = confirm("\nIs miner behind your Time of Day meter? ")
     pool_selections = conf["pools"].copy()
     if len(pool_selections) > 1:
-        primary_pool_input = select("Select primary pool: ", pool_selections, "󰘆")
+        primary_pool_input = select(
+            "Select primary pool: ", pool_selections, "󰘆")
     else:
         primary_pool_input = pool_selections[0]
     pri_pool_user_input = text("Enter primary pool user: ", "")
@@ -244,7 +246,8 @@ def add_miner(conf: dict) -> dict:
         sec_pool_user_input = text("Enter secondary pool user: ", "")
         sec_pool_pw_input = text("Enter secondary pool password: ", "")
     elif len(pool_selections) > 1:
-        secondary_pool_input = select("Select secondary pool: ", pool_selections, "󰘆")
+        secondary_pool_input = select(
+            "Select secondary pool: ", pool_selections, "󰘆")
         sec_pool_user_input = text("Enter secondary pool user: ", "")
         sec_pool_pw_input = text("Enter secondary pool password: ", "")
     conf["miners"].append(
@@ -304,7 +307,8 @@ def add_pool(conf: dict) -> dict:
     if "pools" not in conf:
         conf["pools"] = []
     else:
-        current_pools = [pool["url"] for pool in conf["pools"] if "url" in pool]
+        current_pools = [pool["url"]
+                         for pool in conf["pools"] if "url" in pool]
         coloring.print_info(f"Current pools: {current_pools}")
     pool_url_input = text("Enter pool url: ", "󰖟")
     conf["pools"].append(pool_url_input)
