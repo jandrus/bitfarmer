@@ -17,6 +17,110 @@
  - Volcminer D1
  - Volcminer D1 Lite
 
+## Installation
+
+## Logs :file_cabinet:
+
+## Configuration
+`bitfarmer` can be configured through the guided prompts or manually with the editor provided. If no configuration has been saved, the user will be prompted to create one with the guided prompts. It is recommended to use the guided menus to edit the configuration rather than manually.
+
+The configuration file is located at:
+ - Linux: `$HOME/.config/bitfarmer/conf.json`
+
+### Configuration Variables:
+ - `tod_schedule`: Time of Day (TOD) schedule to turn miners that are designated as `tod[true|false]` on or off. 
+   - `days` are a list that contains the days the TOD applies ([Monday - Sunday]). 
+   - `hours` are a list of integers that correspond to the 24 hour clock ([0 - 23]). Minutes are not available. 
+   - `exceptions` are a list of days in the format `mm/dd/yyyy` that are days where the TOD schedule does not apply.
+ - `view`: How will the stats be viewed in the terminal (`full|small`).
+ - `editor`: Editor to be used when manually editing the configuration (Use `vim`).
+ - `ntp`: NTP servers `bitfarmer` uses to get accurate time.
+ - `pools`: List of mining pool urls to assign miners to.
+ - `miners`: List of machines to be controlled and monitored by `bitfarmer`.
+   - `ip`: IP address of machine. Must be online when adding via the guided method.
+   - `type`: Miner type (DG1+/Volcminer)
+   - `login`: Login user (usually `root`)
+   - `password`: Login user password
+   - `tod`: Is miner behind TOD meter (`true|false`)
+   - `primary_pool`: Pool url that will be set as the primary pool url in the miner.
+   - `primary_pool_user`: Pool username that will be set as the primary pool username in the miner.
+   - `primary_pool_pass`: Pool password that will be set as the primary pool password in the miner.
+   - `secondary_pool`: Pool url that will be set as the secondary pool url in the miner.
+   - `secondary_pool_user`: Pool username that will be set as the secondary pool username in the miner.
+   - `secondary_pool_pass`: Pool password that will be set as the secondary pool password in the miner.
+
+### Example Configuration
+``` json
+{
+    "tod_schedule": {
+        "days": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+        ],
+        "hours": [
+            6,
+            7,
+            8
+        ],
+        "exceptions": [
+            "01/01/2025",
+            "04/18/2025",
+            "07/04/2025",
+            "09/01/2025",
+            "11/27/2025",
+            "11/28/2025",
+            "12/24/2025",
+            "12/25/2025"
+        ]
+    },
+    "view": "full",
+    "editor": "nvim",
+    "ntp": {
+        "primary": "NTP_SERVER_1",
+        "secondary": "NTP_SERVER_2"
+    },
+    "pools": [
+        "stratum+tcp://POOL_URL:PORT",
+        "stratum+tcp://POOL_URL:PORT",
+    ],
+    "miners": [
+        {
+            "ip": "MINER_IP",
+            "type": "DG1+/DGHome",
+            "login": "MINER_LOGIN",
+            "password": "MINER_LOGIN_PASSWORD",
+            "tod": true,
+            "primary_pool": "stratum+tcp://POOL_URL:PORT",
+            "primary_pool_user": "POOL_WORKER_NAME",
+            "primary_pool_pass": "POOL_PASSWORD",
+            "secondary_pool": "stratum+tcp://POOL_URL:PORT",
+            "secondary_pool_user": "POOL_WORKER_NAME",
+            "secondary_pool_pass": "POOL_PASSWORD"
+        },
+        {
+            "ip": "MINER_IP",
+            "type": "VolcMiner D1",
+            "login": "MINER_LOGIN",
+            "password": "MINER_LOGIN_PASSWORD",
+            "tod": true,
+            "primary_pool": "stratum+tcp://POOL_URL:PORT",
+            "primary_pool_user": "POOL_WORKER_NAME",
+            "primary_pool_pass": "POOL_PASSWORD",
+            "secondary_pool": "stratum+tcp://POOL_URL:PORT",
+            "secondary_pool_user": "POOL_WORKER_NAME",
+            "secondary_pool_pass": "POOL_PASSWORD"
+        }
+    ]
+}
+```
+
+
+## Donate :hugs:
+- **BTC**: `bc1qvx8q2xxwesw22yvrftff89e79yh86s56y2p9x9`
+
 ## TODO :construction_worker_man:
  - [x] Guided edit of configuration
  - [ ] Volcminer
@@ -30,15 +134,23 @@
  - [x] Improve error handling (could still be better)
  - [ ] Improve README
    - [ ] Installation
-   - [ ] Configuration explanation
+   - [x] Configuration explanation
    - [ ] Demo
  - [x] Move colors to file
  - [x] Prints to logging
    - [x] Move detailed errors to log
  - [ ] Icons optional
 
+## License
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+any later version.
 
-## Installation
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-## Donate :hugs:
-- **BTC**: `bc1qvx8q2xxwesw22yvrftff89e79yh86s56y2p9x9`
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
