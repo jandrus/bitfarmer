@@ -6,9 +6,9 @@ import subprocess
 from datetime import datetime
 
 import questionary as quest
-from colorama import Fore
 from platformdirs import user_config_dir, user_data_dir
 
+import bitfarmer.coloring as coloring
 from bitfarmer.miner import MinerStatus
 
 AVAIL_MINERS = ["DG1+/DGHome", "VolcMiner D1"]
@@ -52,7 +52,7 @@ def init_config() -> dict:
     """Initialize config"""
     os.makedirs(CONF_DIR, exist_ok=True)
     os.makedirs(DATA_DIR, exist_ok=True)
-    print(f"{Fore.GREEN}Creating initial configuration{Fore.RESET}")
+    coloring.print_primary("Creating initial configuration")
     conf = {}
     tod = confirm("\nSetup time of day schedule?")
     if tod:
@@ -72,17 +72,19 @@ def init_config() -> dict:
         if not add_more:
             break
         conf = add_miner(conf)
-    print(json.dumps(conf, indent=2))
     write_config(conf)
+    coloring.print_secondary(json.dumps(conf, indent=2))
     edit = confirm("\nManually make edits to config?")
     if edit:
         conf = manually_edit_conf(conf)
+    coloring.print_success("Configuration created")
     return conf
 
 
 def edit_conf(conf: dict) -> dict:
     """Edit configuration manually or guided"""
-    how_edit = select("Edit config manually or guided: ", ["guided", "manual"], "?")
+    how_edit = select("Edit config manually or guided: ",
+                      ["guided", "manual"], "?")
     if how_edit == "manual":
         return manually_edit_conf(conf)
     avail_params = [
@@ -114,6 +116,7 @@ def edit_conf(conf: dict) -> dict:
                 conf = select_editor(conf)
             case _:
                 break
+    coloring.print_success("Configuration edited successfully")
     return reload_config(conf)
 
 
@@ -125,20 +128,20 @@ def manually_edit_conf(conf: dict) -> dict:
 
 def set_ntp(conf: dict) -> dict:
     """Set ntp servers"""
-    print(f"{Fore.GREEN}\nAdd NTP servers:{Fore.RESET}")
+    coloring.print_primary("Set NTP servers")
     pri_server_input = text("Enter primary NTP server address: ", "󱉊")
     sec_server_input = text("Enter secondary NTP server address: ", "󱉊")
     conf["ntp"] = {
         "primary": pri_server_input,
         "secondary": sec_server_input,
     }
-    print(f"{Fore.GREEN}NTP servers added{Fore.RESET}")
+    coloring.print_success("NTP servers added")
     return conf
 
 
 def setup_time_of_day(conf: dict) -> dict:
     """Setup/edit time of day configuration"""
-    print(f"{Fore.GREEN}Creating time of day schedule{Fore.RESET}")
+    coloring.print_primary("Create Time of Day schedule")
     tod_exceptions = []
     if "tod_schedule" not in conf:
         conf["tod_schedule"] = {}
@@ -166,7 +169,7 @@ def setup_time_of_day(conf: dict) -> dict:
     )
     tod_hours = [int(h[:-2]) for h in tod_hours]
     if tod_exceptions:
-        print(f"{Fore.MAGENTA}Exceptions: {tod_exceptions}{Fore.RESET}")
+        coloring.print_info(f"Current Exceptions: {tod_exceptions}")
     while True:
         add_exception = confirm("\nAdd schedule exceptions?")
         if not add_exception:
@@ -178,21 +181,21 @@ def setup_time_of_day(conf: dict) -> dict:
         )
         if date_exception not in tod_exceptions:
             tod_exceptions.append(date_exception)
-    print(f"{Fore.GREEN}Schedule added{Fore.RESET}")
     conf["tod_schedule"]["days"] = tod_days
     conf["tod_schedule"]["hours"] = tod_hours
     conf["tod_schedule"]["exceptions"] = tod_exceptions
+    coloring.print_success("Time of Day schedule created")
     return conf
 
 
 def add_miner(conf: dict) -> dict:
     """Add miner to config"""
-    print(f"{Fore.GREEN}\nAdd miner:{Fore.RESET}")
+    coloring.print_primary("Add miner")
     if "miners" not in conf:
         conf["miners"] = []
     ip_input = text("Enter miner IP: ", "󰩟")
     if any("ip" in v and v["ip"] == ip_input for v in conf["miners"]):
-        print("miner already exists")
+        coloring.print_warn("Miner IP already exists")
         return conf
     type_input = select("Select miner type: ", AVAIL_MINERS, "")
     login_input = text("Enter miner login: ", "")
@@ -203,11 +206,12 @@ def add_miner(conf: dict) -> dict:
         if password_input == password_input_conf:
             break
         else:
-            print("Passwords do not match")
+            coloring.print_warn("Passwords do not match")
     tod_input = confirm("\nIs miner behind your Time of Day meter? ")
     pool_selections = conf["pools"].copy()
     if len(pool_selections) > 1:
-        primary_pool_input = select("Select primary pool: ", pool_selections, "󰘆")
+        primary_pool_input = select(
+            "Select primary pool: ", pool_selections, "󰘆")
     else:
         primary_pool_input = pool_selections[0]
     pri_pool_user_input = text("Enter primary pool user: ", "")
@@ -217,12 +221,13 @@ def add_miner(conf: dict) -> dict:
     sec_pool_user_input = ""
     sec_pool_pw_input = ""
     if len(pool_selections) == 1:
-        print(f"{Fore.GREEN}Secondary Pool: {pool_selections[0]}{Fore.RESET}")
+        coloring.print_info(f"Secondary Pool: {pool_selections[0]}")
         secondary_pool_input = pool_selections[0]
         sec_pool_user_input = text("Enter secondary pool user: ", "")
         sec_pool_pw_input = text("Enter secondary pool password: ", "")
     elif len(pool_selections) > 1:
-        secondary_pool_input = select("Select secondary pool: ", pool_selections, "󰘆")
+        secondary_pool_input = select(
+            "Select secondary pool: ", pool_selections, "󰘆")
         sec_pool_user_input = text("Enter secondary pool user: ", "")
         sec_pool_pw_input = text("Enter secondary pool password: ", "")
     conf["miners"].append(
@@ -242,27 +247,27 @@ def add_miner(conf: dict) -> dict:
     )
     miners = sorted(conf["miners"], key=lambda x: x.get("ip", ""))
     conf["miners"] = miners
-    print(f"{Fore.GREEN}Miner added{Fore.RESET}")
+    coloring.print_success("Miner added")
     return conf
 
 
 def choose_view(conf: dict) -> dict:
     """Choose view for miner status"""
-    print(f"{Fore.GREEN}\nChoose view for miners:{Fore.RESET}")
+    coloring.print_primary("Choose view for miners")
     miner_stat = MinerStatus("127.0.0.1")
-    print("Full")
+    coloring.print_info("Full")
     miner_stat.pprint()
-    print("Small")
+    coloring.print_info("Small")
     miner_stat.print_small()
     view_input = select("Select view: ", ["small", "full"], "󱢈")
     conf["view"] = view_input
-    print(f"{Fore.GREEN}View set{Fore.RESET}")
+    coloring.print_success("View set")
     return conf
 
 
 def select_editor(conf: dict) -> dict:
     """Choose editor"""
-    print(f"{Fore.GREEN}\nSelect editor for manually editing config:{Fore.RESET}")
+    coloring.print_primary("Select editor for manually editing config")
     editor = select(
         "Select editor: ",
         ["vim", "emacs", "nano", "vi", "nvim", "notepad", "other"],
@@ -271,39 +276,41 @@ def select_editor(conf: dict) -> dict:
     if editor == "other":
         editor = text("Enter editor: ", "")
     conf["editor"] = editor
-    print(f"{Fore.GREEN}Editor set{Fore.RESET}")
+    coloring.print_success("Editor set")
     return conf
 
 
 def add_pool(conf: dict) -> dict:
     """Add pools to config"""
-    print(f"{Fore.GREEN}\nAdd pool:{Fore.RESET}")
+    coloring.print_primary("Add mining pools")
     current_pools = []
     if "pools" not in conf:
         conf["pools"] = []
     else:
-        current_pools = [pool["url"] for pool in conf["pools"] if "url" in pool]
-        print(f"{Fore.GREEN}\nCurrent pools: {current_pools} {Fore.RESET}")
+        current_pools = [pool["url"]
+                         for pool in conf["pools"] if "url" in pool]
+        coloring.print_info(f"Current pools: {current_pools}")
     pool_url_input = text("Enter pool url: ", "󰖟")
     conf["pools"].append(pool_url_input)
-    print(f"{Fore.GREEN}Pool added{Fore.RESET}")
+    coloring.print_success("Pool added")
     return conf
 
 
 def delete_miners(conf: dict) -> dict:
     """Delete miners from config"""
     if "miners" not in conf.keys():
-        print("No miners to delete")
+        coloring.print_warn("No miners to delete")
         return conf
     current_ips = [conf["miners"][i]["ip"] for i in range(len(conf["miners"]))]
     del_ips = checkbox("Choose miners to delete: ", current_ips, "󰗨")
-    print(f"{Fore.RED}Delete miners: {del_ips}{Fore.RESET}")
+    coloring.print_warn(f"Delete miners: {del_ips}")
     if confirm("Are you sure you want to delete these miners?"):
         miners = []
         for miner in conf["miners"]:
             if miner["ip"] not in del_ips:
                 miners.append(miner)
         conf["miners"] = miners
+    coloring.print_success("Miners deleted")
     return conf
 
 

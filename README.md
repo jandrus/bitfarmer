@@ -18,7 +18,7 @@
  - Volcminer D1 Lite
 
 ## TODO :construction_worker_man:
- - [X] Guided edit of configuration
+ - [x] Guided edit of configuration
  - [ ] Volcminer
    - [ ] Cap fan speed when stopped mining
  - [ ] Manual mode:
@@ -27,15 +27,16 @@
  - [ ] Integrate pool stats
    - [ ] API key in configuration file
  - [ ] Ping test when adding miners (ip)
- - [X] Improve error handling (could still be better)
+ - [x] Improve error handling (could still be better)
  - [ ] Improve README
    - [ ] Installation
    - [ ] Configuration explanation
    - [ ] Demo
- - [ ] Move colors to file
+ - [x] Move colors to file
+ - [ ] Prints to logging
 
 
 ## Installation
 
-## Donate
+## Donate :hugs:
 - **BTC**: `bc1qvx8q2xxwesw22yvrftff89e79yh86s56y2p9x9`

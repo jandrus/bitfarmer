@@ -7,9 +7,9 @@ import sys
 import time
 from datetime import datetime
 
-from colorama import Fore
 from yaspin import yaspin
 
+import bitfarmer.coloring as coloring
 import bitfarmer.config as config
 import bitfarmer.log as log
 import bitfarmer.ntp as ntp
@@ -40,13 +40,11 @@ def get_input(prompt: str, timeout: int) -> str | None:
     """Get user input with timeout"""
     action_prompt = ""
     for action in ACTIONS:
-        action_prompt += (
-            f"{Fore.RED}'{action['key']}'{Fore.YELLOW} -> {action['expl']}, "
-        )
-    action_prompt = action_prompt[:-2]
-    action_prompt += Fore.RESET
+        action_prompt += coloring.secondary_color(
+            "'" + action["key"] + "'"
+        ) + coloring.primary_color(f" -> {action['expl']}, ")
     print(action_prompt)
-    print(prompt, end="", flush=True)
+    print(coloring.primary_color(prompt), end="", flush=True)
     rlist, _, _ = select.select([sys.stdin], [], [], timeout)
     if rlist:
         return sys.stdin.readline().strip().lower()
@@ -66,10 +64,11 @@ def perform_action(action: str, conf: dict) -> dict:
         case "r":
             _ = start_miners(conf, False, all_miners=True)
         case "x":
-            print("Goodbye")
+            coloring.print_success("Goodbye")
             sys.exit(0)
         case _:
-            raise ValueError("Invalid action")
+            coloring.print_warn("Invalid action")
+            time.sleep(3)
     return conf
 
 
@@ -119,20 +118,22 @@ def stop_miners(conf: dict, for_tod: bool, all_miners: bool = False) -> bool:
     """stop miners"""
     miners = get_miners(conf)
     if for_tod:
-        print("Stopping miners for time of day metering")
+        coloring.print_warn("Stopping miners for time of day metering")
         log.log_msg("Stopping miners for time of day metering", "INFO")
     if all_miners:
-        print("Stopping ALL miners")
+        coloring.print_warn("Stopping ALL miners")
         log.log_msg("Stopping ALL miners", "INFO")
     for miner in miners:
         if all_miners or miner.tod and for_tod:
-            print(f"Stopping {miner.ip}")
+            coloring.print_warn(f"Stopping {miner.ip}")
             _ = miner.stop_mining()
             log.log_msg(f"{miner.ip} stopped mining", "INFO")
             miner.reboot()
             log.log_msg(f"{miner.ip} rebooted", "INFO")
     with yaspin(
-        text="Miners have been stopped, waiting 2 minutess for reboot",
+        text=coloring.info_color(
+            "Miners have been stopped, waiting 2 minutess for reboot"
+        ),
         color="blue",
         timer=True,
     ) as sp:
@@ -145,18 +146,20 @@ def start_miners(conf: dict, for_tod: bool, all_miners: bool = False) -> bool:
     """start miners"""
     miners = get_miners(conf)
     if for_tod:
-        print("Starting miners for time of day metering")
+        coloring.print_info("Starting miners for time of day metering")
         log.log_msg("Starting miners for time of day metering", "INFO")
     if all_miners:
-        print("Starting ALL miners")
+        coloring.print_info("Starting ALL miners")
         log.log_msg("Starting ALL miners", "INFO")
     for miner in miners:
         if all_miners or for_tod and miner.tod:
-            print(f"Starting {miner.ip}")
+            coloring.print_info(f"Starting {miner.ip}")
             _ = miner.start_mining()
             log.log_msg(f"{miner.ip} started mining", "INFO")
     with yaspin(
-        text="Miners have been started, waiting 2 minutes for configuration to reload",
+        text=coloring.info_color(
+            "Miners have been started, waiting 2 minutes for configuration to reload"
+        ),
         color="blue",
         timer=True,
     ) as sp:
@@ -173,22 +176,24 @@ def main():
         while True:
             clear_screen()
             ts = get_ts(conf)
-            print(Fore.GREEN + BANNER)
-            print(time.ctime(ts) + Fore.RESET)
+            coloring.print_primary(BANNER)
+            coloring.print_info(time.ctime(ts))
             if is_tod_active(ts, conf) and not miners_have_been_stopped:
                 try:
                     miners_have_been_stopped = stop_miners(conf, True)
                 except Exception as e:
                     err_msg = f"Error stopping miners: {type(e).__name__} -> {str(e)}"
                     log.log_msg(err_msg, "ERROR")
-                    print(Fore.RED + err_msg + Fore.RESET)
+                    coloring.print_error(err_msg)
+                    time.sleep(5)
             if not is_tod_active(ts, conf) and miners_have_been_stopped:
                 try:
                     miners_have_been_stopped = start_miners(conf, True)
                 except Exception as e:
                     err_msg = f"Error starting miners: {type(e).__name__} -> {str(e)}"
                     log.log_msg(err_msg, "ERROR")
-                    print(Fore.RED + err_msg + Fore.RESET)
+                    coloring.print_error(err_msg)
+                    time.sleep(5)
             for miner in miners:
                 try:
                     stats = miner.get_miner_status()
@@ -200,7 +205,8 @@ def main():
                 except Exception as e:
                     err_msg = f"Error gathering data for {miner.ip}: {type(e).__name__} -> {str(e)}"
                     log.log_msg(err_msg, "ERROR")
-                    print(Fore.RED + err_msg + Fore.RESET)
+                    coloring.print_error(err_msg)
+                    time.sleep(5)
             user_input = get_input("Action: ", WAIT_TIME)
             if user_input is not None:
                 conf = perform_action(user_input, conf)
@@ -208,14 +214,15 @@ def main():
     except json.JSONDecodeError as e:
         err_msg = f"Config error: {type(e).__name__} -> {str(e)}"
         log.log_msg(err_msg, "CRITICAL")
-        print(Fore.RED + err_msg + Fore.RESET)
+        coloring.print_error(err_msg)
         sys.exit(1)
     except KeyboardInterrupt:
         log.log_msg("program exit by user", "INFO")
-        print(f"{Fore.GREEN}Goodbye{Fore.RESET}")
+        coloring.print_success("Goodbye")
     except Exception as e:
-        log.log_msg(f"Unknown error: {type(e).__name__} -> {str(e)}", "CRITICAL")
-        print(f"{Fore.RED}CRITICAL error: {type(e).__name__} -> {str(e)}{Fore.RESET}")
+        err_msg = f"Unknown error: {type(e).__name__} -> {str(e)}"
+        log.log_msg(err_msg, "CRITICAL")
+        coloring.print_error(err_msg)
         sys.exit(1)
 
 

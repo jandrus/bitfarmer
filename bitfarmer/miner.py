@@ -3,19 +3,7 @@
 from abc import abstractmethod
 from dataclasses import dataclass
 
-from colorama import Fore
-
-PRIMARY_COLOR = Fore.BLUE
-SECONDARY_COLOR = Fore.MAGENTA
-ACCENT_COLOR = Fore.CYAN
-
-
-def sec_color(s):
-    return f"{SECONDARY_COLOR}{s}{PRIMARY_COLOR}"
-
-
-def acc_color(s):
-    return f"{ACCENT_COLOR}{s}{PRIMARY_COLOR}"
+import bitfarmer.coloring as coloring
 
 
 class Miner:
@@ -117,31 +105,52 @@ class MinerStatus:
                     (self.temp_0 + self.temp_1 + self.temp_2 + self.temp_3) / 4, 2
                 )
 
+    def get_rejection_rate(self) -> str:
+        """Get rejection rate from pool"""
+        return (
+            f"{self.pool_rejected / (self.pool_accepted + self.pool_rejected):.2%}"
+            if self.pool_accepted > 0
+            else "0.0"
+        )
+
     def print_small(self):
         """Print condensed status"""
         current_hr = f"{self.hashrate_total_current / 1000:,.2f} GH/s"
         avg_hr = f"{self.hashrate_total_avg / 1000:,.2f} GH/s"
-        fans_ok = "" if self.fans_ok() else ""
-        pool_ok = "" if self.pool != "None" else ""
+        fans_ok = (
+            coloring.success_color(
+                "") if self.fans_ok() else coloring.err_color("")
+        )
+        pool_ok = (
+            coloring.success_color("")
+            if self.pool != "None" and self.pool != "POOL_URL"
+            else coloring.err_color("")
+        )
+        rejection_rate = self.get_rejection_rate()
         avg_temp = self.get_avg_temp()
-        info = f"{self.ip:<13} {self.miner_type:<13}   {sec_color(self.uptime):<22}   {sec_color(avg_temp):<15}   󰈐 {sec_color(fans_ok)}  Pool {sec_color(pool_ok)}    {sec_color(current_hr)}  (Avg: {sec_color(avg_hr)})"
-        print(PRIMARY_COLOR + info + Fore.RESET)
+        info = f"{coloring.primary_color(self.ip):<13} {coloring.primary_color(self.miner_type):<13}  {coloring.secondary_color('')} {coloring.info_color(self.uptime):<22}  {coloring.secondary_color('')} {coloring.info_color(avg_temp):<15}   {coloring.secondary_color('󰈐')} {fans_ok}  {coloring.secondary_color('Pool')} {pool_ok} {coloring.primary_color('(Rejection %:')} {coloring.err_color(rejection_rate)}{coloring.primary_color(')')}   {coloring.secondary_color('')} {coloring.info_color(current_hr)}  {coloring.primary_color('(Avg: ')}{coloring.info_color(avg_hr)}{coloring.primary_color(')')}"
+        print(info)
 
     def pprint(self):
         """Print miner status for display"""
         current_hr = f"{self.hashrate_total_current / 1000:,.2f} GH/s"
         avg_hr = f"{self.hashrate_total_avg / 1000:,.2f} GH/s"
-        rejection_rate = (
-            f"{self.pool_rejected / (self.pool_accepted + self.pool_rejected):.2%}"
-            if self.pool_accepted > 0
-            else "0.0"
-        )
-        header = f"{self.ip:<13}   {self.hostname:<10} [{acc_color(self.miner_type)}]  {sec_color('')} {acc_color(self.uptime)}\n"
-        pool = f"\t\tPool:     {sec_color('󰢷')} {acc_color(self.pool)}  {sec_color('󰖵')} {acc_color(self.pool_user)}\n"
-        shares = f"\t\tShares:   {sec_color('')} {acc_color(self.pool_accepted)}  {sec_color('')} {acc_color(self.pool_rejected)}  {sec_color('')} {acc_color(self.pool_stale)}  (Rejection rate {acc_color(rejection_rate)})\n"
-        hashrate = f"\t\tHashrate: {sec_color('')} {acc_color(current_hr)}  (Avg: {acc_color(avg_hr)})\n"
-        hardware = f"\t\tHardware: {sec_color('󰈐')} [{acc_color(self.fan_0)}, {acc_color(self.fan_1)}, {acc_color(self.fan_2)}, {acc_color(self.fan_3)}]rpm  {sec_color('')} [{acc_color(self.temp_0)}, {acc_color(self.temp_1)}, {acc_color(self.temp_2)}, {acc_color(self.temp_3)}]C"
-        print(PRIMARY_COLOR + header + pool + shares + hashrate + hardware + Fore.RESET)
+        rejection_rate = self.get_rejection_rate()
+        fan_status = f"[{self.fan_0}, {self.fan_1}, {self.fan_2}, {self.fan_3}]"
+        temp_status = f"[{self.temp_0}, {self.temp_1}, {self.temp_2}, {self.temp_3}]"
+        header = f"{coloring.primary_color(self.ip):<32}  {coloring.primary_color(self.miner_type):<31} {coloring.secondary_color('')} {coloring.info_color(self.uptime)}  {coloring.secondary_color('󰈐')} {coloring.info_color(fan_status)}{coloring.primary_color('rpm')}  {coloring.secondary_color('')} {coloring.info_color(temp_status)}{coloring.primary_color('C')}\n"
+        pool = f"\t\t{coloring.primary_color('Pool:')}         {coloring.secondary_color('󰢷')} {coloring.info_color(self.pool)}  {coloring.secondary_color('󰖵')} {coloring.info_color(self.pool_user)}\n"
+        shares = f"\t\t{coloring.primary_color('Shares:')}       {coloring.secondary_color('')} {coloring.info_color(self.pool_accepted)}  {coloring.secondary_color('')} {coloring.info_color(self.pool_rejected)}  {coloring.secondary_color('')} {coloring.info_color(self.pool_stale)}  {coloring.primary_color('(Rejection rate ')}{coloring.err_color(rejection_rate)}{coloring.primary_color(')')}\n"
+        hashrate = f"\t\t{coloring.primary_color('Hashrate:')}     {coloring.secondary_color('')} {coloring.info_color(current_hr)}  {coloring.primary_color('(Avg:')} {coloring.info_color(avg_hr)}{coloring.primary_color(')')}"
+        print(header + pool + shares + hashrate)
 
     def __str__(self):
         return f"{self.ip:<13}, {self.miner_type:<13}, {self.hostname:<9}, {self.uptime:<12}, {self.hashrate_total_current:9.2f}, {self.hashrate_total_avg:9.2f}, {self.hashrate_0:7.2f}, {self.hashrate_1:7.2f}, {self.hashrate_2:7.2f}, {self.hashrate_3:7.2f}, {self.fan_0:>5}, {self.fan_1:>5}, {self.fan_2:>5}, {self.fan_3:>5}, {self.temp_0:5}, {self.temp_1:5}, {self.temp_2:5}, {self.temp_3:5}, {self.pool:<32}, {self.pool_user}"
+
+
+if __name__ == "__main__":
+    stats = MinerStatus("127.0.0.1")
+    print("FULL")
+    stats.pprint()
+    print("SMALL")
+    stats.print_small()
