@@ -26,7 +26,7 @@
    - [ ] Stop subset of machines
  - [ ] Integrate pool stats
    - [ ] API key in configuration file
- - [ ] Ping test when adding miners (ip)
+ - [x] Ping test when adding miners (ip)
  - [x] Improve error handling (could still be better)
  - [ ] Improve README
    - [ ] Installation
@@ -34,6 +34,8 @@
    - [ ] Demo
  - [x] Move colors to file
  - [x] Prints to logging
+   - [ ] Move detailed errors to log
+ - [ ] Icons optional
 
 
 ## Installation

@@ -19,11 +19,11 @@ def log_msg(msg: str, level: str, quiet: bool = False):
             case "SUCCESS":
                 coloring.print_success(msg)
             case "CRITICAL":
-                coloring.print_error(msg)
+                coloring.print_error("Critical: " + msg)
             case "ERROR":
-                coloring.print_error(msg)
+                coloring.print_error("Error: " + msg)
             case "WARNING":
-                coloring.print_warn(msg)
+                coloring.print_warn("Warning: " + msg)
             case "INFO":
                 coloring.print_info(msg)
             case _:

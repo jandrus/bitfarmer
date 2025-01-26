@@ -179,7 +179,7 @@ def main():
                     miners_have_been_stopped = stop_miners(conf, True)
                 except Exception as e:
                     log.log_msg(
-                        f"Error stopping miners: {type(e).__name__} -> {str(e)}",
+                        f"Error stopping miners {type(e).__name__} -> {str(e)}",
                         "ERROR",
                     )
                     time.sleep(5)
@@ -188,11 +188,14 @@ def main():
                     miners_have_been_stopped = start_miners(conf, True)
                 except Exception as e:
                     log.log_msg(
-                        f"Error starting miners: {type(e).__name__} -> {str(e)}",
+                        f"Error starting miners {type(e).__name__} -> {str(e)}",
                         "ERROR",
                     )
                     time.sleep(5)
             for miner in miners:
+                if not config.ping(miner.ip):
+                    log.log_msg(f"{miner.ip} not pingable", "ERROR")
+                    continue
                 try:
                     stats = miner.get_miner_status()
                     if conf["view"] == "small":
@@ -202,7 +205,7 @@ def main():
                     log.log_stats(str(stats))
                 except Exception as e:
                     log.log_msg(
-                        f"Error gathering data for {miner.ip}: {type(e).__name__} -> {str(e)}",
+                        f"Error gathering data for {miner.ip} {type(e).__name__} -> {str(e)}",
                         "ERROR",
                     )
                     time.sleep(5)
@@ -211,13 +214,13 @@ def main():
                 conf = perform_action(user_input, conf)
                 miners = get_miners(conf)
     except json.JSONDecodeError as e:
-        log.log_msg(f"Config error: {type(e).__name__} -> {str(e)}", "CRITICAL")
+        log.log_msg(f"Config error {type(e).__name__} -> {str(e)}", "CRITICAL")
         sys.exit(1)
     except KeyboardInterrupt:
         log.log_msg("program exit by user", "INFO", quiet=True)
         coloring.print_success("Goodbye")
     except Exception as e:
-        log.log_msg(f"Unknown error: {type(e).__name__} -> {str(e)}", "CRITICAL")
+        log.log_msg(f"Unknown error {type(e).__name__} -> {str(e)}", "CRITICAL")
         sys.exit(1)
 
 

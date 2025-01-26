@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import platform
 import os
 import subprocess
 from datetime import datetime
@@ -19,6 +20,22 @@ AUTHOR = "jimboslice"
 DATA_DIR = user_data_dir(APP_NAME, AUTHOR) + "/"
 CONF_DIR = user_config_dir(APP_NAME, AUTHOR) + "/"
 ENCRYPT = False
+
+
+def ping(addr: str) -> bool:
+    """Return ping success or fail"""
+    param = "-n" if platform.system().lower() == "windows" else "-c"
+    try:
+        return (
+            subprocess.call(
+                ["ping", param, "1", addr],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            == 0
+        )
+    except:
+        return False
 
 
 def reload_config(conf: dict) -> dict:
@@ -83,8 +100,7 @@ def init_config() -> dict:
 
 def edit_conf(conf: dict) -> dict:
     """Edit configuration manually or guided"""
-    how_edit = select("Edit config manually or guided: ",
-                      ["guided", "manual"], "?")
+    how_edit = select("Edit config manually or guided: ", ["guided", "manual"], "?")
     if how_edit == "manual":
         return manually_edit_conf(conf)
     avail_params = [
@@ -197,6 +213,9 @@ def add_miner(conf: dict) -> dict:
     if any("ip" in v and v["ip"] == ip_input for v in conf["miners"]):
         coloring.print_warn("Miner IP already exists")
         return conf
+    if not ping(ip_input):
+        coloring.print_warn("Address invalid or not pingable")
+        return conf
     type_input = select("Select miner type: ", AVAIL_MINERS, "")
     login_input = text("Enter miner login: ", "")
     password_input = ""
@@ -210,8 +229,7 @@ def add_miner(conf: dict) -> dict:
     tod_input = confirm("\nIs miner behind your Time of Day meter? ")
     pool_selections = conf["pools"].copy()
     if len(pool_selections) > 1:
-        primary_pool_input = select(
-            "Select primary pool: ", pool_selections, "󰘆")
+        primary_pool_input = select("Select primary pool: ", pool_selections, "󰘆")
     else:
         primary_pool_input = pool_selections[0]
     pri_pool_user_input = text("Enter primary pool user: ", "")
@@ -226,8 +244,7 @@ def add_miner(conf: dict) -> dict:
         sec_pool_user_input = text("Enter secondary pool user: ", "")
         sec_pool_pw_input = text("Enter secondary pool password: ", "")
     elif len(pool_selections) > 1:
-        secondary_pool_input = select(
-            "Select secondary pool: ", pool_selections, "󰘆")
+        secondary_pool_input = select("Select secondary pool: ", pool_selections, "󰘆")
         sec_pool_user_input = text("Enter secondary pool user: ", "")
         sec_pool_pw_input = text("Enter secondary pool password: ", "")
     conf["miners"].append(
@@ -287,8 +304,7 @@ def add_pool(conf: dict) -> dict:
     if "pools" not in conf:
         conf["pools"] = []
     else:
-        current_pools = [pool["url"]
-                         for pool in conf["pools"] if "url" in pool]
+        current_pools = [pool["url"] for pool in conf["pools"] if "url" in pool]
         coloring.print_info(f"Current pools: {current_pools}")
     pool_url_input = text("Enter pool url: ", "󰖟")
     conf["pools"].append(pool_url_input)
@@ -380,5 +396,7 @@ if __name__ == "__main__":
     try:
         conf = read_conf()
         print(json.dumps(conf, indent=2))
+        conf = add_miner(conf)
+        # print(json.dumps(conf, indent=2))
     except Exception as e:
         print(f"{type(e).__name__} -> {str(e)}")
