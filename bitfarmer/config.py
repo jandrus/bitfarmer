@@ -10,7 +10,7 @@ import questionary as quest
 from platformdirs import user_config_dir, user_data_dir
 
 import bitfarmer.coloring as coloring
-from bitfarmer.miner import MinerStatus
+from bitfarmer.miner import MinerStatus, get_style
 
 AVAIL_MINERS = ["DG1+/DGHome", "VolcMiner D1"]
 CONF_FILE = "conf.json"
@@ -274,13 +274,20 @@ def add_miner(conf: dict) -> dict:
 def choose_view(conf: dict) -> dict:
     """Choose view for miner status"""
     coloring.print_primary("Choose view for miners")
+    print(
+        f"Icons: {get_style('OK', True)}, {get_style('ERR', True)}, {get_style('TEMP', True)}, {get_style('FANS', True)}"
+    )
+    icons_enabled = confirm(
+        "\nDo the above icons appear (required nerd fonts to be installed)?"
+    )
     miner_stat = MinerStatus("127.0.0.1")
     coloring.print_info("Full")
-    miner_stat.pprint()
+    miner_stat.pprint(icons_enabled)
     coloring.print_info("Small")
-    miner_stat.print_small()
+    miner_stat.print_small(icons_enabled)
     view_input = select("Select view: ", ["small", "full"], "󱢈")
     conf["view"] = view_input
+    conf["icons"] = icons_enabled
     coloring.print_success("View set")
     return conf
 

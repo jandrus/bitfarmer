@@ -193,9 +193,9 @@ def main():
                 try:
                     stats = miner.get_miner_status()
                     if conf["view"] == "small":
-                        stats.print_small()
+                        stats.print_small(conf["icons"])
                     else:
-                        stats.pprint()
+                        stats.pprint(conf["icons"])
                     log.log_stats(str(stats))
                 except Exception as e:
                     log.log_msg(

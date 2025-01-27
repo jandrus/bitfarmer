@@ -33,6 +33,7 @@ The configuration file is located at:
    - `hours` are a list of integers that correspond to the 24 hour clock ([0 - 23]). Minutes are not available. 
    - `exceptions` are a list of days in the format `mm/dd/yyyy` that are days where the TOD schedule does not apply.
  - `view`: How will the stats be viewed in the terminal (`full|small`).
+ - `icons`: Enable icons (requires nerd fonts to be installed).
  - `editor`: Editor to be used when manually editing the configuration (Use `vim`).
  - `ntp`: NTP servers `bitfarmer` uses to get accurate time.
  - `pools`: List of mining pool urls to assign miners to.
@@ -77,6 +78,7 @@ The configuration file is located at:
         ]
     },
     "view": "full",
+    "icons": false,
     "editor": "nvim",
     "ntp": {
         "primary": "NTP_SERVER_1",
@@ -119,7 +121,8 @@ The configuration file is located at:
 
 
 ## Donate :hugs:
-- **BTC**: `bc1qvx8q2xxwesw22yvrftff89e79yh86s56y2p9x9`
+ - **BTC**: `bc1qvx8q2xxwesw22yvrftff89e79yh86s56y2p9x9`
+ - **Lightning**: `lightning:lnurl1dp68gurn8ghj7urjd9kkzmpwdejhgtewwajkcmpdddhx7amw9akxuatjd3cz76tkdae8jmrpv3ukyat88y48qmzv`
 
 ## TODO :construction_worker_man:
  - [x] Guided edit of configuration
@@ -139,7 +142,7 @@ The configuration file is located at:
  - [x] Move colors to file
  - [x] Prints to logging
    - [x] Move detailed errors to log
- - [ ] Icons optional
+ - [x] Icons optional
 
 ## License
 This program is free software: you can redistribute it and/or modify

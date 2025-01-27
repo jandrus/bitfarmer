@@ -6,6 +6,46 @@ from dataclasses import dataclass
 import bitfarmer.coloring as coloring
 
 
+def get_style(name: str, icons_enabled: bool):
+    """get icon if enabled"""
+    match name:
+        case "OK":
+            output = "" if icons_enabled else "OK"
+            return coloring.success_color(output)
+        case "ERR":
+            output = "" if icons_enabled else "Err"
+            return coloring.err_color(output)
+        case "UPTIME":
+            output = "" if icons_enabled else "Uptime:"
+            return coloring.secondary_color(output)
+        case "TEMP":
+            output = "" if icons_enabled else "Temp:"
+            return coloring.secondary_color(output)
+        case "FANS":
+            output = "󰈐" if icons_enabled else "Fans:"
+            return coloring.secondary_color(output)
+        case "POOL":
+            output = "󰘆" if icons_enabled else "Pool:"
+            return coloring.secondary_color(output)
+        case "WORKER":
+            output = "󰖵" if icons_enabled else "Worker:"
+            return coloring.secondary_color(output)
+        case "HR":
+            output = "󰢷" if icons_enabled else "HR:"
+            return coloring.secondary_color(output)
+        case "ACCEPTED":
+            output = "" if icons_enabled else "Accepted:"
+            return coloring.secondary_color(output)
+        case "REJECTED":
+            output = "" if icons_enabled else "Rejected:"
+            return coloring.secondary_color(output)
+        case "STALE":
+            output = "" if icons_enabled else "Rejected:"
+            return coloring.secondary_color(output)
+        case _:
+            return "None"
+
+
 class Miner:
     """Master miner class"""
 
@@ -97,12 +137,12 @@ class MinerStatus:
             case 1:
                 return self.temp_0
             case 2:
-                return round((self.temp_0 + self.temp_1) / 2, 2)
+                return round((self.temp_0 + self.temp_1) / 2, 1)
             case 3:
-                return round((self.temp_0 + self.temp_1 + self.temp_2) / 3, 2)
+                return round((self.temp_0 + self.temp_1 + self.temp_2) / 3, 1)
             case _:
                 return round(
-                    (self.temp_0 + self.temp_1 + self.temp_2 + self.temp_3) / 4, 2
+                    (self.temp_0 + self.temp_1 + self.temp_2 + self.temp_3) / 4, 1
                 )
 
     def get_rejection_rate(self) -> str:
@@ -113,36 +153,96 @@ class MinerStatus:
             else "0.0"
         )
 
-    def print_small(self):
+    def print_small(self, icons: bool):
         """Print condensed status"""
-        current_hr = f"{self.hashrate_total_current / 1000:,.2f} GH/s"
-        avg_hr = f"{self.hashrate_total_avg / 1000:,.2f} GH/s"
-        fans_ok = (
-            coloring.success_color(
-                "") if self.fans_ok() else coloring.err_color("")
-        )
+        fans_ok = get_style("OK", icons) if self.fans_ok() else get_style("ERR", icons)
         pool_ok = (
-            coloring.success_color("")
+            get_style("OK", icons)
             if self.pool != "None" and self.pool != "POOL_URL"
-            else coloring.err_color("")
+            else get_style("ERR", icons)
         )
-        rejection_rate = self.get_rejection_rate()
-        avg_temp = self.get_avg_temp()
-        info = f"{coloring.primary_color(self.ip):<13} {coloring.primary_color(self.miner_type):<13}  {coloring.secondary_color('')} {coloring.info_color(self.uptime):<22}  {coloring.secondary_color('')} {coloring.info_color(avg_temp):<15}   {coloring.secondary_color('󰈐')} {fans_ok}  {coloring.secondary_color('Pool')} {pool_ok} {coloring.primary_color('(Rejection %:')} {coloring.err_color(rejection_rate)}{coloring.primary_color(')')}   {coloring.secondary_color('')} {coloring.info_color(current_hr)}  {coloring.primary_color('(Avg: ')}{coloring.info_color(avg_hr)}{coloring.primary_color(')')}"
-        print(info)
+        uptime = (
+            f"{get_style('UPTIME', icons)} {coloring.info_color(self.uptime):<29} "
+            if icons
+            else ""
+        )
+        print(
+            f"{coloring.primary_color(self.ip):<32} {coloring.primary_color(self.miner_type):<30} "
+            + uptime
+            + f"{get_style('TEMP', icons)} {coloring.info_color(self.get_avg_temp()):<15} "
+            + get_style("FANS", icons)
+            + " "
+            + fans_ok
+            + " "
+            + get_style("POOL", icons)
+            + " "
+            + pool_ok
+            + " "
+            + coloring.primary_color("(Rejection %: ")
+            + coloring.err_color(self.get_rejection_rate())
+            + coloring.primary_color(") ")
+            + get_style("HR", icons)
+            + " "
+            + coloring.info_color(f"{self.hashrate_total_current / 1000:,.2f} GH/s ")
+            + coloring.primary_color("(Avg: ")
+            + coloring.info_color(f"{self.hashrate_total_avg / 1000:,.2f} GH/s")
+            + coloring.primary_color(")")
+        )
 
-    def pprint(self):
+    def pprint(self, icons: bool):
         """Print miner status for display"""
-        current_hr = f"{self.hashrate_total_current / 1000:,.2f} GH/s"
-        avg_hr = f"{self.hashrate_total_avg / 1000:,.2f} GH/s"
-        rejection_rate = self.get_rejection_rate()
-        fan_status = f"[{self.fan_0}, {self.fan_1}, {self.fan_2}, {self.fan_3}]"
-        temp_status = f"[{self.temp_0}, {self.temp_1}, {self.temp_2}, {self.temp_3}]"
-        header = f"{coloring.primary_color(self.ip):<32}  {coloring.primary_color(self.miner_type):<31} {coloring.secondary_color('')} {coloring.info_color(self.uptime)}  {coloring.secondary_color('󰈐')} {coloring.info_color(fan_status)}{coloring.primary_color('rpm')}  {coloring.secondary_color('')} {coloring.info_color(temp_status)}{coloring.primary_color('C')}\n"
-        pool = f"\t\t{coloring.primary_color('Pool:')}         {coloring.secondary_color('󰢷')} {coloring.info_color(self.pool)}  {coloring.secondary_color('󰖵')} {coloring.info_color(self.pool_user)}\n"
-        shares = f"\t\t{coloring.primary_color('Shares:')}       {coloring.secondary_color('')} {coloring.info_color(self.pool_accepted)}  {coloring.secondary_color('')} {coloring.info_color(self.pool_rejected)}  {coloring.secondary_color('')} {coloring.info_color(self.pool_stale)}  {coloring.primary_color('(Rejection rate ')}{coloring.err_color(rejection_rate)}{coloring.primary_color(')')}\n"
-        hashrate = f"\t\t{coloring.primary_color('Hashrate:')}     {coloring.secondary_color('')} {coloring.info_color(current_hr)}  {coloring.primary_color('(Avg:')} {coloring.info_color(avg_hr)}{coloring.primary_color(')')}"
-        print(header + pool + shares + hashrate)
+        print(
+            f"{coloring.primary_color(self.ip):<32}  "
+            + f"{coloring.primary_color(self.miner_type):<30} "
+            + get_style("UPTIME", icons)
+            + " "
+            + coloring.info_color(self.uptime)
+            + "  "
+            + get_style("FANS", icons)
+            + " "
+            + coloring.info_color(
+                f"[{self.fan_0}, {self.fan_1}, {self.fan_2}, {self.fan_3}]"
+            )
+            + coloring.primary_color("rpm  ")
+            + get_style("TEMP", icons)
+            + " "
+            + coloring.info_color(
+                f"[{self.temp_0}, {self.temp_1}, {self.temp_2}, {self.temp_3}]"
+            )
+            + coloring.primary_color("C\n")
+            + f"\t\t{coloring.primary_color('Pool:'):31}"
+            + get_style("POOL", icons)
+            + " "
+            + coloring.info_color(self.pool)
+            + "  "
+            + get_style("WORKER", icons)
+            + " "
+            + coloring.info_color(self.pool_user)
+            + "\n"
+            + f"\t\t{coloring.primary_color('Shares:'):31}"
+            + get_style("ACCEPTED", icons)
+            + " "
+            + coloring.info_color(self.pool_accepted)
+            + "  "
+            + get_style("REJECTED", icons)
+            + " "
+            + coloring.info_color(self.pool_rejected)
+            + "  "
+            + get_style("STALE", icons)
+            + " "
+            + coloring.info_color(self.pool_stale)
+            + coloring.primary_color("  (Rejection rate ")
+            + coloring.err_color(self.get_rejection_rate())
+            + coloring.primary_color(")")
+            + "\n"
+            + f"\t\t{coloring.primary_color('Hashrate:'):31}"
+            + get_style("HR", icons)
+            + " "
+            + coloring.info_color(f"{self.hashrate_total_current / 1000:,.2f} GH/s")
+            + coloring.primary_color(" (Avg: ")
+            + coloring.info_color(f"{self.hashrate_total_avg / 1000:,.2f} GH/s")
+            + coloring.primary_color(")")
+        )
 
     def __str__(self):
         return f"{self.ip:<13}, {self.miner_type:<13}, {self.hostname:<9}, {self.uptime:<12}, {self.hashrate_total_current:9.2f}, {self.hashrate_total_avg:9.2f}, {self.hashrate_0:7.2f}, {self.hashrate_1:7.2f}, {self.hashrate_2:7.2f}, {self.hashrate_3:7.2f}, {self.fan_0:>5}, {self.fan_1:>5}, {self.fan_2:>5}, {self.fan_3:>5}, {self.temp_0:5}, {self.temp_1:5}, {self.temp_2:5}, {self.temp_3:5}, {self.pool:<32}, {self.pool_user}"
@@ -151,6 +251,6 @@ class MinerStatus:
 if __name__ == "__main__":
     stats = MinerStatus("127.0.0.1")
     print("FULL")
-    stats.pprint()
+    stats.pprint(False)
     print("SMALL")
-    stats.print_small()
+    stats.print_small(False)

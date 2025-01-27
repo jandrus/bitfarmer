@@ -227,7 +227,10 @@ if __name__ == "__main__":
         }
     )
     stats = volc.get_miner_status()
-    stats.pprint()
+    stats.pprint(False)
+    stats.pprint(True)
+    stats.print_small(False)
+    stats.print_small(True)
     # conf = volc.get_miner_conf()
     # print(json.dumps(conf, indent=2))
 

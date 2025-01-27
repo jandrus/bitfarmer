@@ -184,7 +184,10 @@ if __name__ == "__main__":
         }
     )
     stats = dg.get_miner_status()
-    stats.pprint()
+    stats.pprint(False)
+    stats.pprint(True)
+    stats.print_small(False)
+    stats.print_small(True)
     # resp = dg.stop_mining()
     # resp = dg.start_mining()
     # print(json.dumps(resp, indent=2))
