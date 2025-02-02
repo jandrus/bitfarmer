@@ -155,7 +155,8 @@ class MinerStatus:
 
     def print_small(self, icons: bool):
         """Print condensed status"""
-        fans_ok = get_style("OK", icons) if self.fans_ok() else get_style("ERR", icons)
+        fans_ok = get_style("OK", icons) if self.fans_ok(
+        ) else get_style("ERR", icons)
         pool_ok = (
             get_style("OK", icons)
             if self.pool != "None" and self.pool != "POOL_URL"

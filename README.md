@@ -21,6 +21,27 @@
 
 ## Logs :file_cabinet:
 
+### bitfarmer.log
+The log file is located at:
+ - Linux: `$HOME/.local/share/bitfarmer/bitfarmer.log`
+ 
+Contains `INFO`, `WARNING`, `ERROR`, and `CRITICAL` messages. Detailed troubleshooting messages can be found here.
+
+
+### minerstats.csv
+The stats file is located at:
+ - Linux: `$HOME/.local/share/bitfarmer/minerstats.csv`
+
+Contains miner parameters in CSV format. Stats logged are as follows:
+
+``` csv
+TS        , IP           , TYPE         , HOSTNAME , UPTIME      ,    HR NOW,    HR AVG,    HR 0,    HR 1,    HR 2,    HR 3, FAN 0, FAN 1, FAN 2, FAN 3, TMP 0, TMP 1, TMP 2, TMP 3, POOL                            , POOL USER
+1737674539, 172.16.0.101 , DG1+         , DG1plus-1, 28m33s      ,      0.00,      0.00,    0.00,    0.00,    0.00,    0.00,  3420,  3420,  3480,  3480,    66,    66,    66,    66, stratum+tcp://ltc.viabtc.io:3333, XXXX.worker1
+1737674543, 172.16.0.105 , VolcMiner D1 , VolcMiner, 14m47s      ,  15386.02,  15409.69, 5126.88, 5175.20, 5083.94,    0.00,  3300,  3240,  3210,  3240,    60,    62,    61,     0, stratum+tcp://ltc.viabtc.io:3333, XXXX.worker5
+```
+
+`
+
 ## Configuration
 `bitfarmer` can be configured through the guided prompts or manually with the editor provided. If no configuration has been saved, the user will be prompted to create one with the guided prompts. It is recommended to use the guided menus to edit the configuration rather than manually.
 
@@ -33,7 +54,7 @@ The configuration file is located at:
    - `hours` are a list of integers that correspond to the 24 hour clock ([0 - 23]). Minutes are not available. 
    - `exceptions` are a list of days in the format `mm/dd/yyyy` that are days where the TOD schedule does not apply.
  - `view`: How will the stats be viewed in the terminal (`full|small`).
- - `icons`: Enable icons (requires nerd fonts to be installed).
+ - `icons`: Enable icons (`true|false`). Requires nerd fonts to be installed.
  - `editor`: Editor to be used when manually editing the configuration (Use `vim`).
  - `ntp`: NTP servers `bitfarmer` uses to get accurate time.
  - `pools`: List of mining pool urls to assign miners to.
@@ -127,7 +148,7 @@ The configuration file is located at:
 ## TODO :construction_worker_man:
  - [x] Guided edit of configuration
  - [ ] Volcminer
-   - [ ] Cap fan speed when stopped mining
+   - [x] Cap fan speed when stopped mining
  - [ ] Manual mode:
    - [ ] Start subset of machines
    - [ ] Stop subset of machines

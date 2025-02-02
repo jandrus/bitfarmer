@@ -7,6 +7,7 @@ import sys
 import time
 from datetime import datetime
 
+import requests
 from yaspin import yaspin
 
 import bitfarmer.coloring as coloring
@@ -122,12 +123,18 @@ def stop_miners(conf: dict, for_tod: bool, all_miners: bool = False) -> bool:
     if all_miners:
         log.log_msg("Stopping ALL miners", "INFO")
     for miner in miners:
-        if all_miners or miner.tod and for_tod:
-            coloring.print_warn(f"Stopping {miner.ip}")
-            _ = miner.stop_mining()
-            log.log_msg(f"{miner.ip} stopped mining", "INFO")
-            miner.reboot()
-            log.log_msg(f"{miner.ip} rebooted", "INFO")
+        try:
+            if all_miners or miner.tod and for_tod:
+                coloring.print_warn(f"Stopping {miner.ip}")
+                _ = miner.stop_mining()
+                log.log_msg(f"{miner.ip} stopped mining", "INFO")
+                miner.reboot()
+                log.log_msg(f"{miner.ip} rebooted", "INFO")
+        except requests.exceptions.Timeout:
+            log.log_msg(f"{miner.ip} timeout stopping miner", "ERROR")
+            continue
+        except Exception as e:
+            raise e
     with yaspin(
         text=coloring.info_color(
             "Miners have been stopped, waiting 2 minutess for reboot"
@@ -148,10 +155,16 @@ def start_miners(conf: dict, for_tod: bool, all_miners: bool = False) -> bool:
     if all_miners:
         log.log_msg("Starting ALL miners", "INFO")
     for miner in miners:
-        if all_miners or for_tod and miner.tod:
-            coloring.print_info(f"Starting {miner.ip}")
-            _ = miner.start_mining()
-            log.log_msg(f"{miner.ip} started mining", "INFO")
+        try:
+            if all_miners or for_tod and miner.tod:
+                coloring.print_info(f"Starting {miner.ip}")
+                _ = miner.start_mining()
+                log.log_msg(f"{miner.ip} started mining", "INFO")
+        except requests.exceptions.Timeout:
+            log.log_msg(f"{miner.ip} timeout starting miner", "ERROR")
+            continue
+        except Exception as e:
+            raise e
     with yaspin(
         text=coloring.info_color(
             "Miners have been started, waiting 2 minutes for configuration to reload"

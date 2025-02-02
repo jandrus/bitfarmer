@@ -97,23 +97,23 @@ class VolcminerD1(Miner):
         """Unset mining pools"""
         self.set_nonetrun()
         payload = {
-            "_bb_pool1url": "",
-            "_bb_pool1user": "",
-            "_bb_pool1pw": "",
-            "_bb_pool2url": "",
-            "_bb_pool2user": "",
-            "_bb_pool2pw": "",
+            "_bb_pool1url": self.primary_pool,
+            "_bb_pool1user": self.primary_pool_user,
+            "_bb_pool1pw": self.primary_pool_pass,
+            "_bb_pool2url": self.secondary_pool,
+            "_bb_pool2user": self.secondary_pool_user,
+            "_bb_pool2pw": self.secondary_pool_pass,
             "_bb_pool3url": "",
             "_bb_pool3user": "",
             "_bb_pool3pw": "",
             "_bb_nobeeper": "",
             "_bb_notempoverctrl": "true",
-            "_bb_fan_customize_switch": "true",
-            "_bb_fan_customize_value_front": "0",
-            "_bb_fan_customize_value_back": "20",
+            "_bb_fan_customize_switch": "false",
+            "_bb_fan_customize_value_front": "",
+            "_bb_fan_customize_value_back": "",
             "_bb_freq": "1900",
             "_bb_coin_type": "ltc",
-            "_bb_runmode": "0",
+            "_bb_runmode": "-1",
             "_bb_voltage_customize_value": "1245",
             "_bb_ema": "3",
             "_bb_debug": "false",
@@ -203,7 +203,7 @@ class VolcminerD1(Miner):
             headers=headers,
             data=payload,
             auth=HTTPDigestAuth(self.login, self.password),
-            timeout=20,
+            timeout=40,
         )
         if resp.status_code != requests.codes.ok:
             resp.raise_for_status()
@@ -218,12 +218,12 @@ if __name__ == "__main__":
             "login": "root",
             "password": "newsgrapefatopal",
             "tod": True,
-            "primary_pool": "stratum+tcp://americas.mining-dutch.nl:8888",
-            "primary_pool_user": "avandy.worker5",
-            "primary_pool_pass": "d=1920000",
-            "secondary_pool": "stratum+tcp://ltc.viabtc.io:3333",
-            "secondary_pool_user": "NCAV.worker5",
-            "secondary_pool_pass": "123",
+            "primary_pool": "stratum+tcp://ltc.viabtc.io:3333",
+            "primary_pool_user": "NCAV.worker5",
+            "primary_pool_pass": "123",
+            "secondary_pool": "",
+            "secondary_pool_user": "",
+            "secondary_pool_pass": "",
         }
     )
     stats = volc.get_miner_status()
@@ -231,8 +231,8 @@ if __name__ == "__main__":
     stats.pprint(True)
     stats.print_small(False)
     stats.print_small(True)
-    # conf = volc.get_miner_conf()
-    # print(json.dumps(conf, indent=2))
+    conf = volc.get_miner_conf()
+    print(json.dumps(conf, indent=2))
 
     # resp = volc.stop_mining()
     # resp = volc.start_mining()

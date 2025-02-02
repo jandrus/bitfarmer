@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="bitfarmer",
-    version="0.1.0",
+    version="0.1.1",
     author="jimboslice",
     author_email="jandrus@citadel.edu",
     description="ASIC manager.",
@@ -20,4 +20,9 @@ setup(
         "platformdirs>=4.3.6",
         "yaspin>=3.1.0",
     ],
+    entry_points={
+        "console_scripts": [
+            "bitfarmer=bitfarmer.bitfarmer:main",
+        ],
+    },
 )
