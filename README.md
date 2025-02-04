@@ -17,6 +17,11 @@
  - Volcminer D1
  - Volcminer D1 Lite
 
+## Demo
+<img src="https://github.com/jandrus/bitfarmer/blob/main/demo/status.png?raw=true">
+<img src="https://github.com/jandrus/bitfarmer/blob/main/demo/stopping_tod.png?raw=true">
+<img src="https://github.com/jandrus/bitfarmer/blob/main/demo/edit_conf.png?raw=true">
+
 ## Installation
 
 ## Logs :file_cabinet:
@@ -147,7 +152,7 @@ The configuration file is located at:
 
 ## TODO :construction_worker_man:
  - [x] Guided edit of configuration
- - [ ] Volcminer
+ - [x] Volcminer
    - [x] Cap fan speed when stopped mining
  - [ ] Manual mode:
    - [ ] Start subset of machines

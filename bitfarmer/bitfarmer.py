@@ -7,7 +7,6 @@ import sys
 import time
 from datetime import datetime
 
-import requests
 from yaspin import yaspin
 
 import bitfarmer.coloring as coloring
@@ -130,11 +129,8 @@ def stop_miners(conf: dict, for_tod: bool, all_miners: bool = False) -> bool:
                 log.log_msg(f"{miner.ip} stopped mining", "INFO")
                 miner.reboot()
                 log.log_msg(f"{miner.ip} rebooted", "INFO")
-        except requests.exceptions.Timeout:
-            log.log_msg(f"{miner.ip} timeout stopping miner", "ERROR")
-            continue
         except Exception as e:
-            raise e
+            log.log_msg(f"Error stopping {miner.ip}", "ERROR", exc=e)
     with yaspin(
         text=coloring.info_color(
             "Miners have been stopped, waiting 2 minutess for reboot"
@@ -160,11 +156,8 @@ def start_miners(conf: dict, for_tod: bool, all_miners: bool = False) -> bool:
                 coloring.print_info(f"Starting {miner.ip}")
                 _ = miner.start_mining()
                 log.log_msg(f"{miner.ip} started mining", "INFO")
-        except requests.exceptions.Timeout:
-            log.log_msg(f"{miner.ip} timeout starting miner", "ERROR")
-            continue
         except Exception as e:
-            raise e
+            log.log_msg(f"Error starting {miner.ip}", "ERROR", exc=e)
     with yaspin(
         text=coloring.info_color(
             "Miners have been started, waiting 2 minutes for configuration to reload"
@@ -211,8 +204,7 @@ def main():
                         stats.pprint(conf["icons"])
                     log.log_stats(str(stats))
                 except Exception as e:
-                    log.log_msg(
-                        f"Error gathering data for {miner.ip}", "ERROR", exc=e)
+                    log.log_msg(f"Error gathering data for {miner.ip}", "ERROR", exc=e)
                     time.sleep(5)
             user_input = get_input("Action: ", WAIT_TIME)
             if user_input is not None:

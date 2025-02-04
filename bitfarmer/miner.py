@@ -40,7 +40,7 @@ def get_style(name: str, icons_enabled: bool):
             output = "" if icons_enabled else "Rejected:"
             return coloring.secondary_color(output)
         case "STALE":
-            output = "" if icons_enabled else "Rejected:"
+            output = "" if icons_enabled else "Stale:"
             return coloring.secondary_color(output)
         case _:
             return "None"
@@ -155,8 +155,7 @@ class MinerStatus:
 
     def print_small(self, icons: bool):
         """Print condensed status"""
-        fans_ok = get_style("OK", icons) if self.fans_ok(
-        ) else get_style("ERR", icons)
+        fans_ok = get_style("OK", icons) if self.fans_ok() else get_style("ERR", icons)
         pool_ok = (
             get_style("OK", icons)
             if self.pool != "None" and self.pool != "POOL_URL"
