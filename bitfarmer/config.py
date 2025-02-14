@@ -6,6 +6,7 @@ import platform
 import subprocess
 from datetime import datetime
 
+import pycountry
 import questionary as quest
 from platformdirs import user_config_dir, user_data_dir
 
@@ -19,7 +20,6 @@ APP_NAME = "bitfarmer"
 AUTHOR = "jimboslice"
 DATA_DIR = user_data_dir(APP_NAME, AUTHOR) + "/"
 CONF_DIR = user_config_dir(APP_NAME, AUTHOR) + "/"
-ENCRYPT = False
 
 
 def ping(addr: str) -> bool:
@@ -89,6 +89,7 @@ def init_config() -> dict:
         if not add_more:
             break
         conf = add_miner(conf)
+    conf = setup_weather(conf)
     write_config(conf)
     coloring.print_secondary(json.dumps(conf, indent=2))
     edit = confirm("\nManually make edits to config?")
@@ -112,6 +113,7 @@ def edit_conf(conf: dict) -> dict:
         "add miner",
         "delete miners",
         "editor",
+        "weather",
         "DONE",
     ]
     while True:
@@ -131,6 +133,8 @@ def edit_conf(conf: dict) -> dict:
                 conf = delete_miners(conf)
             case "editor":
                 conf = select_editor(conf)
+            case "weather":
+                conf = setup_weather(conf)
             case _:
                 break
     coloring.print_success("Configuration edited successfully")
@@ -307,6 +311,30 @@ def select_editor(conf: dict) -> dict:
     return conf
 
 
+def setup_weather(conf: dict) -> dict:
+    """Choose location for weather"""
+    coloring.print_primary("Setup weather monitoring")
+    metric = confirm("Use metric measurements:")
+    countries = [x.name for x in list(pycountry.countries)]
+    country_name = autocomplete(
+        "Enter the name of your country:", countries, "")
+    country = pycountry.countries.get(name=country_name)
+    regions = [
+        subdiv.name
+        for subdiv in pycountry.subdivisions
+        if subdiv.country_code == country.alpha_2
+    ]
+    region = autocomplete("Enter the name of your state/region:", regions, "")
+    area = text("Enter the name of your town:", "")
+    conf["weather"] = {
+        "metric": metric,
+        "area": area,
+        "region": region,
+        "country": country_name,
+    }
+    return conf
+
+
 def add_pool(conf: dict) -> dict:
     """Add pools to config"""
     coloring.print_primary("Add mining pools")
@@ -403,11 +431,21 @@ def password(prompt: str, validation=default_validate) -> str:
     return answer
 
 
+def autocomplete(prompt: str, choices: list, mark: str) -> str:
+    """Autocomplete input"""
+    answer = quest.autocomplete(prompt, qmark=mark, choices=choices).ask()
+    if answer is None:
+        raise KeyboardInterrupt
+    return answer
+
+
 if __name__ == "__main__":
     try:
-        conf = read_conf()
-        print(json.dumps(conf, indent=2))
-        conf = add_miner(conf)
+        conf = setup_weather({})
+        print(conf)
+        # conf = read_conf()
+        # print(json.dumps(conf, indent=2))
+        # conf = add_miner(conf)
         # print(json.dumps(conf, indent=2))
     except Exception as e:
         print(f"{type(e).__name__} -> {str(e)}")

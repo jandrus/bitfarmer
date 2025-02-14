@@ -141,7 +141,7 @@ class VolcminerD1(Miner):
             "_bb_freq": "1900",
             "_bb_coin_type": "ltc",
             "_bb_runmode": "0",
-            "_bb_voltage_customize_value": "1245",
+            "_bb_voltage_customize_value": "1250",
             "_bb_ema": "3",
             "_bb_debug": "false",
         }

@@ -2,13 +2,16 @@
 
 import os
 import time
+from enum import Enum
 from typing import Optional
 
 import bitfarmer.coloring as coloring
 import bitfarmer.config as config
+from bitfarmer.weather import Weather
 
 LOG_FILE = "bitfarmer.log"
 MINER_LOG = "minerstats.csv"
+WEATHER_LOG = "weather.csv"
 
 
 def log_msg(msg: str, level: str, exc: Optional[Exception] = None, quiet: bool = False):
@@ -32,8 +35,7 @@ def log_msg(msg: str, level: str, exc: Optional[Exception] = None, quiet: bool =
                 )
             case "ERROR":
                 coloring.print_error(
-                    "Error: " + msg +
-                    f" (see {config.DATA_DIR}{LOG_FILE} for details)"
+                    "Error: " + msg + f" (see {config.DATA_DIR}{LOG_FILE} for details)"
                 )
             case "WARNING":
                 coloring.print_warn("Warning: " + msg)
@@ -54,6 +56,17 @@ def log_stats(msg: str):
     else:
         with open(f"{config.DATA_DIR}{MINER_LOG}", "a", encoding="ascii") as f:
             f.write(f"{int(time.time())}, {msg}\n")
+
+
+def log_weather(wtr: Weather):
+    """log weather data"""
+    if not os.path.isfile(f"{config.DATA_DIR}{WEATHER_LOG}"):
+        with open(f"{config.DATA_DIR}{WEATHER_LOG}", "a", encoding="ascii") as f:
+            f.write(wtr.csv_header())
+            f.write(f"{int(time.ctime())}, {wtr.csv()}\n")
+    else:
+        with open(f"{config.DATA_DIR}{WEATHER_LOG}", "a", encoding="ascii") as f:
+            f.write(f"{int(time.ctime())}, {wtr.csv()}\n")
 
 
 if __name__ == "__main__":
